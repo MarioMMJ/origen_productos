@@ -3,9 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../data/product_repository.dart';
 import '../data/history_repository.dart';
+import '../data/restricted_countries_repository.dart';
+import '../data/restricted_items_repository.dart';
 import '../domain/product_model.dart';
 import 'result_bottom_sheet.dart';
 import 'history_screen.dart';
+import 'restricted_countries_screen.dart';
+import 'restricted_items_screen.dart';
 
 enum ScannerState { scanning, loading, success, error, notFound }
 
@@ -19,6 +23,8 @@ class ScannerScreen extends StatefulWidget {
 class _ScannerScreenState extends State<ScannerScreen> {
   final ProductRepository _repository = ProductRepository();
   final HistoryRepository _historyRepository = HistoryRepository();
+  final RestrictedCountriesRepository _restrictedCountriesRepo = RestrictedCountriesRepository();
+  final RestrictedItemsRepository _restrictedItemsRepo = RestrictedItemsRepository();
   final MobileScannerController _controller = MobileScannerController(
     formats: const [BarcodeFormat.ean13],
   );
@@ -66,9 +72,24 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
       if (product != null) {
         await _historyRepository.addProduct(product);
+
+        String? matchedRestrictedCountry;
+        final restrictedCountries = await _restrictedCountriesRepo.getCountries();
+
+        if (product.origin != null) {
+          final originLower = product.origin!.toLowerCase();
+          for (final country in restrictedCountries) {
+            if (originLower.contains(country.toLowerCase())) {
+              matchedRestrictedCountry = country;
+              await _restrictedItemsRepo.addItem(product);
+              break;
+            }
+          }
+        }
+
         if (!mounted) return;
         setState(() => _state = ScannerState.success);
-        _showResultBottomSheet(product);
+        _showResultBottomSheet(product, matchedRestrictedCountry);
       } else {
         setState(() => _state = ScannerState.notFound);
         if (code.startsWith('84')) {
@@ -88,12 +109,12 @@ class _ScannerScreenState extends State<ScannerScreen> {
     }
   }
 
-  void _showResultBottomSheet(ProductModel product) {
+  void _showResultBottomSheet(ProductModel product, String? restrictedCountry) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => ResultBottomSheet(product: product),
+      builder: (context) => ResultBottomSheet(product: product, restrictedCountry: restrictedCountry),
     ).whenComplete(() {
       if (mounted) setState(() => _state = ScannerState.scanning);
     });
@@ -175,6 +196,22 @@ class _ScannerScreenState extends State<ScannerScreen> {
       appBar: AppBar(
         title: const Text('Scan Product Barcode'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const RestrictedItemsScreen()),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.block, color: Colors.red),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const RestrictedCountriesScreen()),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: _showManualEntryDialog,
