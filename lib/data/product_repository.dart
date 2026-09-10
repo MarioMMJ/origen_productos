@@ -1,9 +1,26 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../domain/product_model.dart';
 
+class NoInternetException implements Exception {
+  final String message;
+  NoInternetException([this.message = 'No Internet Connection']);
+  @override
+  String toString() => message;
+}
+
 class ProductRepository {
   Future<ProductModel?> fetchProduct(String barcode) async {
+    try {
+      final result = await InternetAddress.lookup('example.com');
+      if (result.isEmpty || result[0].rawAddress.isEmpty) {
+        throw NoInternetException();
+      }
+    } on SocketException catch (_) {
+      throw NoInternetException();
+    }
+
     final url = Uri.parse('https://world.openfoodfacts.org/api/v2/product/$barcode.json');
     try {
       final response = await http.get(url).timeout(const Duration(seconds: 10));
