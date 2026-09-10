@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'ui/scanner_screen.dart';
+import 'ui/main_navigation.dart';
 import 'theme.dart';
 
 void main() {
@@ -16,7 +16,7 @@ class ProductOriginScannerApp extends StatelessWidget {
       themeMode: ThemeMode.dark, // Strictly dark mode as per requirements
       darkTheme: AppTheme.darkTheme,
       theme: AppTheme.darkTheme, // Defining theme just in case but we force dark mode
-      home: const ScannerScreen(),
+      home: const MainNavigation(),
       debugShowCheckedModeBanner: false,
     );
   }

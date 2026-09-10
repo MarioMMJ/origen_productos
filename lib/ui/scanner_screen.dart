@@ -7,9 +7,6 @@ import '../data/restricted_countries_repository.dart';
 import '../data/restricted_items_repository.dart';
 import '../domain/product_model.dart';
 import 'result_bottom_sheet.dart';
-import 'history_screen.dart';
-import 'restricted_countries_screen.dart';
-import 'restricted_items_screen.dart';
 
 enum ScannerState { scanning, loading, success, error, notFound }
 
@@ -193,71 +190,62 @@ class _ScannerScreenState extends State<ScannerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Scan Product Barcode'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.warning_amber_rounded),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const RestrictedItemsScreen()),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.block),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const RestrictedCountriesScreen()),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: _showManualEntryDialog,
-          ),
-          IconButton(
-            icon: const Icon(Icons.history),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const HistoryScreen()),
-              );
-            },
-          ),
-        ],
-      ),
       body: Stack(
         children: [
           MobileScanner(
             onDetect: _onDetect,
             controller: _controller,
           ),
+          // Minimalist scanning reticle
+          Center(
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.white54, width: 2),
+                borderRadius: BorderRadius.circular(32),
+              ),
+            ),
+          ),
           if (_state == ScannerState.loading)
             const Center(
               child: CircularProgressIndicator(),
             ),
           Positioned(
-            bottom: 24,
-            right: 24,
-            child: ValueListenableBuilder(
-              valueListenable: _controller,
-              builder: (context, state, child) {
-                switch (state.torchState) {
-                  case TorchState.off:
-                  case TorchState.auto:
-                    return FloatingActionButton(
-                      onPressed: () => _controller.toggleTorch(),
-                      child: const Icon(Icons.flash_off),
-                    );
-                  case TorchState.on:
-                    return FloatingActionButton(
-                      onPressed: () => _controller.toggleTorch(),
-                      child: const Icon(Icons.flash_on),
-                    );
-                  case TorchState.unavailable:
-                    return const SizedBox.shrink();
-                }
-              },
+            bottom: 40,
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                FloatingActionButton(
+                  heroTag: 'manual_entry',
+                  onPressed: _showManualEntryDialog,
+                  child: const Icon(Icons.edit),
+                ),
+                ValueListenableBuilder(
+                  valueListenable: _controller,
+                  builder: (context, state, child) {
+                    switch (state.torchState) {
+                      case TorchState.off:
+                      case TorchState.auto:
+                        return FloatingActionButton(
+                          heroTag: 'torch',
+                          onPressed: () => _controller.toggleTorch(),
+                          child: const Icon(Icons.flash_off),
+                        );
+                      case TorchState.on:
+                        return FloatingActionButton(
+                          heroTag: 'torch',
+                          onPressed: () => _controller.toggleTorch(),
+                          child: const Icon(Icons.flash_on),
+                        );
+                      case TorchState.unavailable:
+                        return const SizedBox.shrink();
+                    }
+                  },
+                ),
+              ],
             ),
           ),
         ],

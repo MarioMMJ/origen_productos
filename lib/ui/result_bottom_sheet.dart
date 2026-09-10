@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../domain/product_model.dart';
+import '../theme.dart';
 
 class ResultBottomSheet extends StatelessWidget {
   final ProductModel product;
@@ -9,74 +10,109 @@ class ResultBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isRestricted = restrictedCountry != null;
+    final bool isLocal = product.isFromSpain;
+
+    final Color statusColor = isRestricted
+        ? AppTheme.statusRed
+        : (isLocal ? AppTheme.statusGreen : AppTheme.statusGrey);
+
+    final String statusText = isRestricted
+        ? 'Avoid: $restrictedCountry'
+        : (isLocal ? 'Made in Spain' : 'Other Origin');
+
     return Container(
       padding: const EdgeInsets.all(24.0),
       decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            product.name ?? 'Unknown Product',
-            style: Theme.of(context).textTheme.headlineSmall,
-            textAlign: TextAlign.center,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: AppTheme.scaffoldBackground,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                clipBehavior: Clip.hardEdge,
+                child: product.imageUrl != null
+                    ? Image.network(
+                        product.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(Icons.image_not_supported, size: 32, color: AppTheme.statusGrey),
+                      )
+                    : const Icon(Icons.image_not_supported, size: 32, color: AppTheme.statusGrey),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      product.name ?? 'Unknown Product',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      product.brand ?? 'Unknown Brand',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            product.brand ?? 'Unknown Brand',
-            style: Theme.of(context).textTheme.titleMedium,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          if (restrictedCountry != null)
-            Column(
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+            decoration: BoxDecoration(
+              color: statusColor.withAlpha(25), // ~0.1 opacity
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: statusColor.withAlpha(127), width: 2), // ~0.5 opacity
+            ),
+            child: Row(
               children: [
-                const Icon(Icons.warning_amber_rounded, size: 48),
-                const SizedBox(height: 8),
-                Text(
-                  'Avoid: Manufactured in $restrictedCountry',
-                  style: Theme.of(context).textTheme.titleLarge,
-                  textAlign: TextAlign.center,
+                Icon(
+                  isRestricted
+                      ? Icons.warning_amber_rounded
+                      : (isLocal ? Icons.check_circle : Icons.public),
+                  color: statusColor,
+                  size: 32,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        statusText,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(color: statusColor),
+                      ),
+                      if (product.origin != null && !isRestricted && !isLocal)
+                        Text(
+                          'Origin: ${product.origin}',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                    ],
+                  ),
                 ),
               ],
-            )
-          else ...[
-            if (product.origin != null)
-              Text(
-                'Origin: ${product.origin}',
-                style: Theme.of(context).textTheme.bodyLarge,
-                textAlign: TextAlign.center,
-              ),
-            const SizedBox(height: 24),
-            if (product.isFromSpain)
-              Column(
-                children: [
-                  const Icon(Icons.check_circle, size: 48),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Made in Spain',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                ],
-              )
-            else
-              Column(
-                children: [
-                  const Icon(Icons.public, size: 48),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Not from Spain (or unknown)',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                ],
-              ),
-          ],
+            ),
+          ),
           const SizedBox(height: 32),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.scaffoldBackground,
+            ),
             child: const Text('Scan Another Product'),
           ),
         ],
