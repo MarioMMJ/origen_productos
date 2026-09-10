@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'ui/scanner_screen.dart';
+import 'theme.dart';
 
 void main() {
   runApp(const ProductOriginScannerApp());
@@ -13,19 +14,8 @@ class ProductOriginScannerApp extends StatelessWidget {
     return MaterialApp(
       title: 'Product Origin Scanner',
       themeMode: ThemeMode.dark, // Strictly dark mode as per requirements
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        primarySwatch: Colors.blueGrey,
-        scaffoldBackgroundColor: Colors.black,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.black,
-          elevation: 0,
-        ),
-      ),
-      theme: ThemeData(
-        // Defining theme just in case but we force dark mode
-        brightness: Brightness.dark,
-      ),
+      darkTheme: AppTheme.darkTheme,
+      theme: AppTheme.darkTheme, // Defining theme just in case but we force dark mode
       home: const ScannerScreen(),
       debugShowCheckedModeBanner: false,
     );

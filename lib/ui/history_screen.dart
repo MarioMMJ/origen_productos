@@ -52,7 +52,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ? Center(
                   child: Text(
                     'No scan history yet.',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.grey),
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
                 )
               : ListView.builder(
@@ -63,11 +63,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       title: Text(product.name ?? 'Unknown Product'),
                       subtitle: Text(
                         '${product.brand ?? 'Unknown Brand'}\n${product.timestamp?.toString().split('.').first ?? ''}',
-                        style: const TextStyle(color: Colors.grey),
                       ),
                       trailing: product.isFromSpain
-                          ? const Icon(Icons.check_circle, color: Colors.green)
-                          : const Icon(Icons.public, color: Colors.grey),
+                          ? const Icon(Icons.check_circle)
+                          : const Icon(Icons.public),
                       isThreeLine: true,
                       onTap: () => _showResultBottomSheet(product),
                     );
