@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../data/product_repository.dart';
+import '../data/history_repository.dart';
 import '../domain/product_model.dart';
 import 'result_bottom_sheet.dart';
+import 'history_screen.dart';
 
 enum ScannerState { scanning, loading, success, error, notFound }
 
@@ -15,6 +18,7 @@ class ScannerScreen extends StatefulWidget {
 
 class _ScannerScreenState extends State<ScannerScreen> {
   final ProductRepository _repository = ProductRepository();
+  final HistoryRepository _historyRepository = HistoryRepository();
   ScannerState _state = ScannerState.scanning;
   String? _lastScannedCode;
   DateTime? _lastScannedTime;
@@ -38,6 +42,8 @@ class _ScannerScreenState extends State<ScannerScreen> {
     _lastScannedCode = code;
     _lastScannedTime = now;
 
+    HapticFeedback.vibrate().catchError((_) {});
+
     setState(() => _state = ScannerState.loading);
 
     try {
@@ -46,6 +52,8 @@ class _ScannerScreenState extends State<ScannerScreen> {
       if (!mounted) return;
 
       if (product != null) {
+        await _historyRepository.addProduct(product);
+        if (!mounted) return;
         setState(() => _state = ScannerState.success);
         _showResultBottomSheet(product);
       } else {
@@ -55,7 +63,11 @@ class _ScannerScreenState extends State<ScannerScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _state = ScannerState.error);
-      _showErrorBottomSheet('Error fetching product data.');
+      if (e is NoInternetException) {
+        _showErrorBottomSheet('No Internet Connection');
+      } else {
+        _showErrorBottomSheet('Error fetching product data.');
+      }
     }
   }
 
@@ -106,7 +118,19 @@ class _ScannerScreenState extends State<ScannerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Scan Product Barcode')),
+      appBar: AppBar(
+        title: const Text('Scan Product Barcode'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const HistoryScreen()),
+              );
+            },
+          ),
+        ],
+      ),
       body: Stack(
         children: [
           MobileScanner(
