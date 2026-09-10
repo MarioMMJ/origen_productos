@@ -5,6 +5,7 @@ class ProductModel {
   final String? origin;
   final bool isFromSpain;
   final DateTime? timestamp;
+  final String? imageUrl;
 
   ProductModel({
     required this.barcode,
@@ -13,6 +14,7 @@ class ProductModel {
     this.origin,
     required this.isFromSpain,
     this.timestamp,
+    this.imageUrl,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json, String barcode) {
@@ -31,6 +33,8 @@ class ProductModel {
       fromSpain = true;
     }
 
+    final String? img = product['image_front_url']?.toString().isNotEmpty == true ? product['image_front_url'] : null;
+
     return ProductModel(
       barcode: barcode,
       name: product['product_name']?.toString() ?? 'Unknown Product',
@@ -38,6 +42,7 @@ class ProductModel {
       origin: finalOrigin,
       isFromSpain: fromSpain,
       timestamp: DateTime.now(),
+      imageUrl: img,
     );
   }
 
@@ -49,6 +54,7 @@ class ProductModel {
       origin: json['origin'] as String?,
       isFromSpain: json['isFromSpain'] as bool? ?? false,
       timestamp: json['timestamp'] != null ? DateTime.parse(json['timestamp'] as String) : null,
+      imageUrl: json['imageUrl'] as String?,
     );
   }
 
@@ -59,5 +65,6 @@ class ProductModel {
         'origin': origin,
         'isFromSpain': isFromSpain,
         'timestamp': timestamp?.toIso8601String(),
+        'imageUrl': imageUrl,
       };
 }
