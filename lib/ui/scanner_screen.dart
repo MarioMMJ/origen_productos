@@ -133,7 +133,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(isInfo ? Icons.info_outline : Icons.error_outline, color: isInfo ? Colors.blue : Colors.red, size: 48),
+            Icon(isInfo ? Icons.info_outline : Icons.error_outline, size: 48),
             const SizedBox(height: 16),
             Text(
               message,
@@ -197,7 +197,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
         title: const Text('Scan Product Barcode'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+            icon: const Icon(Icons.warning_amber_rounded),
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => const RestrictedItemsScreen()),
@@ -205,7 +205,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.block, color: Colors.red),
+            icon: const Icon(Icons.block),
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => const RestrictedCountriesScreen()),
@@ -247,12 +247,12 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   case TorchState.auto:
                     return FloatingActionButton(
                       onPressed: () => _controller.toggleTorch(),
-                      child: const Icon(Icons.flash_off, color: Colors.grey),
+                      child: const Icon(Icons.flash_off),
                     );
                   case TorchState.on:
                     return FloatingActionButton(
                       onPressed: () => _controller.toggleTorch(),
-                      child: const Icon(Icons.flash_on, color: Colors.yellow),
+                      child: const Icon(Icons.flash_on),
                     );
                   case TorchState.unavailable:
                     return const SizedBox.shrink();

@@ -59,7 +59,6 @@ class _RestrictedCountriesScreenState extends State<RestrictedCountriesScreen> {
                     controller: _controller,
                     decoration: const InputDecoration(
                       hintText: 'Enter country name',
-                      border: OutlineInputBorder(),
                     ),
                     onSubmitted: (_) => _addCountry(),
                   ),
@@ -81,7 +80,7 @@ class _RestrictedCountriesScreenState extends State<RestrictedCountriesScreen> {
                     child: ListTile(
                       title: Text(country),
                       trailing: IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
+                        icon: Icon(Icons.delete, color: Theme.of(context).primaryColor),
                         onPressed: () => _removeCountry(country),
                       ),
                     ),

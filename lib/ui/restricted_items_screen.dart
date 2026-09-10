@@ -52,7 +52,7 @@ class _RestrictedItemsScreenState extends State<RestrictedItemsScreen> {
               ? Center(
                   child: Text(
                     'No restricted items flagged yet.',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.grey),
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
                 )
               : ListView.builder(
@@ -64,7 +64,7 @@ class _RestrictedItemsScreenState extends State<RestrictedItemsScreen> {
                       child: InkWell(
                         onTap: () => _showResultBottomSheet(product),
                         child: Padding(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: const EdgeInsets.all(24.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -75,12 +75,12 @@ class _RestrictedItemsScreenState extends State<RestrictedItemsScreen> {
                               const SizedBox(height: 4),
                               Text(
                                 'Brand: ${product.brand ?? 'Unknown Brand'}',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                                style: Theme.of(context).textTheme.bodyMedium,
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 'Origin: ${product.origin ?? 'Unknown Origin'}',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
+                                style: Theme.of(context).textTheme.bodyMedium,
                               ),
                               const SizedBox(height: 16),
                               SizedBox(

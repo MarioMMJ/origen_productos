@@ -27,18 +27,18 @@ class ResultBottomSheet extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             product.brand ?? 'Unknown Brand',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.grey),
+            style: Theme.of(context).textTheme.titleMedium,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
           if (restrictedCountry != null)
             Column(
               children: [
-                const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 48),
+                const Icon(Icons.warning_amber_rounded, size: 48),
                 const SizedBox(height: 8),
                 Text(
                   'Avoid: Manufactured in $restrictedCountry',
-                  style: const TextStyle(color: Colors.red, fontSize: 18, fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.titleLarge,
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -52,24 +52,24 @@ class ResultBottomSheet extends StatelessWidget {
               ),
             const SizedBox(height: 24),
             if (product.isFromSpain)
-              const Column(
+              Column(
                 children: [
-                  Icon(Icons.check_circle, color: Colors.green, size: 48),
-                  SizedBox(height: 8),
+                  const Icon(Icons.check_circle, size: 48),
+                  const SizedBox(height: 8),
                   Text(
                     'Made in Spain',
-                    style: TextStyle(color: Colors.green, fontSize: 18, fontWeight: FontWeight.bold),
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ],
               )
             else
-              const Column(
+              Column(
                 children: [
-                  Icon(Icons.public, color: Colors.grey, size: 48),
-                  SizedBox(height: 8),
+                  const Icon(Icons.public, size: 48),
+                  const SizedBox(height: 8),
                   Text(
                     'Not from Spain (or unknown)',
-                    style: TextStyle(color: Colors.grey, fontSize: 16),
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ],
               ),
