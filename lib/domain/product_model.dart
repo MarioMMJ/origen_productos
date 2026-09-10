@@ -1,9 +1,10 @@
 class ProductModel {
   final String? name;
+  final String? brand;
   final String? origin;
   final bool isFromSpain;
 
-  ProductModel({this.name, this.origin, required this.isFromSpain});
+  ProductModel({this.name, this.brand, this.origin, required this.isFromSpain});
 
   factory ProductModel.fromJson(Map<String, dynamic> json, String barcode) {
     final product = json['product'] ?? {};
@@ -23,6 +24,7 @@ class ProductModel {
 
     return ProductModel(
       name: product['product_name']?.toString() ?? 'Unknown Product',
+      brand: product['brands']?.toString().isNotEmpty == true ? product['brands'] : 'Unknown Brand',
       origin: finalOrigin,
       isFromSpain: fromSpain,
     );
