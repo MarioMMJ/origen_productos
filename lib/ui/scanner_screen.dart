@@ -19,9 +19,18 @@ class ScannerScreen extends StatefulWidget {
 class _ScannerScreenState extends State<ScannerScreen> {
   final ProductRepository _repository = ProductRepository();
   final HistoryRepository _historyRepository = HistoryRepository();
+  final MobileScannerController _controller = MobileScannerController(
+    formats: const [BarcodeFormat.ean13],
+  );
   ScannerState _state = ScannerState.scanning;
   String? _lastScannedCode;
   DateTime? _lastScannedTime;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   void _onDetect(BarcodeCapture capture) async {
     if (_state != ScannerState.scanning) return;
@@ -42,6 +51,10 @@ class _ScannerScreenState extends State<ScannerScreen> {
     _lastScannedCode = code;
     _lastScannedTime = now;
 
+    await _processBarcode(code);
+  }
+
+  Future<void> _processBarcode(String code) async {
     HapticFeedback.vibrate().catchError((_) {});
 
     setState(() => _state = ScannerState.loading);
@@ -58,7 +71,11 @@ class _ScannerScreenState extends State<ScannerScreen> {
         _showResultBottomSheet(product);
       } else {
         setState(() => _state = ScannerState.notFound);
-        _showErrorBottomSheet('Product not found in database.');
+        if (code.startsWith('84')) {
+          _showErrorBottomSheet('Origin unknown, but registered by a Spanish distributor.', isInfo: true);
+        } else {
+          _showErrorBottomSheet('Product not found in database.');
+        }
       }
     } catch (e) {
       if (!mounted) return;
@@ -82,7 +99,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
     });
   }
 
-  void _showErrorBottomSheet(String message) {
+  void _showErrorBottomSheet(String message, {bool isInfo = false}) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -95,7 +112,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, color: Colors.red, size: 48),
+            Icon(isInfo ? Icons.info_outline : Icons.error_outline, color: isInfo ? Colors.blue : Colors.red, size: 48),
             const SizedBox(height: 16),
             Text(
               message,
@@ -115,12 +132,53 @@ class _ScannerScreenState extends State<ScannerScreen> {
     });
   }
 
+  void _showManualEntryDialog() {
+    final TextEditingController controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Enter Barcode Manually'),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(
+            hintText: 'e.g. 8412345678901',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final code = controller.text.trim();
+              if (code.length == 8 || code.length == 13) {
+                Navigator.of(context).pop();
+                _processBarcode(code);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Barcode must be 8 or 13 digits.')),
+                );
+              }
+            },
+            child: const Text('Submit'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Scan Product Barcode'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: _showManualEntryDialog,
+          ),
           IconButton(
             icon: const Icon(Icons.history),
             onPressed: () {
@@ -135,14 +193,36 @@ class _ScannerScreenState extends State<ScannerScreen> {
         children: [
           MobileScanner(
             onDetect: _onDetect,
-            controller: MobileScannerController(
-              formats: const [BarcodeFormat.ean13],
-            ),
+            controller: _controller,
           ),
           if (_state == ScannerState.loading)
             const Center(
               child: CircularProgressIndicator(),
             ),
+          Positioned(
+            bottom: 24,
+            right: 24,
+            child: ValueListenableBuilder(
+              valueListenable: _controller,
+              builder: (context, state, child) {
+                switch (state.torchState) {
+                  case TorchState.off:
+                  case TorchState.auto:
+                    return FloatingActionButton(
+                      onPressed: () => _controller.toggleTorch(),
+                      child: const Icon(Icons.flash_off, color: Colors.grey),
+                    );
+                  case TorchState.on:
+                    return FloatingActionButton(
+                      onPressed: () => _controller.toggleTorch(),
+                      child: const Icon(Icons.flash_on, color: Colors.yellow),
+                    );
+                  case TorchState.unavailable:
+                    return const SizedBox.shrink();
+                }
+              },
+            ),
+          ),
         ],
       ),
     );
